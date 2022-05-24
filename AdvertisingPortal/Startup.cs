@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AdvertisingPortal.DataAccess;
+using AdvertisingPortal.Services.Implementations;
+using AdvertisingPortal.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +29,8 @@ namespace AdvertisingPortal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IUserDbService, UserDbService>();
+            services.AddTransient<IAdvertisementDbService, AdvertisementDbService>();
             services.AddDbContext<PortalDbContext>( opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DbConnString"));
@@ -50,6 +54,7 @@ namespace AdvertisingPortal
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
