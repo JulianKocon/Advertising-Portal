@@ -10,5 +10,6 @@ namespace AdvertisingPortal.Services.Interfaces
     public interface IUserDbService
     {
         Task<User> RegisterUserAsync(UserDTO userDTO);
+        Task<ResultMessageDTO> LoginUserAsync(UserToLoginDTO userToLoginDTO);
     }
 }

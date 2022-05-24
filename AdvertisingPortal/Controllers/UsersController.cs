@@ -40,5 +40,14 @@ namespace AdvertisingPortal.Controllers
 
         }
 
+        [HttpPost("Login")]
+        public async Task<IActionResult> LoginUser(UserToLoginDTO userToLoginDTO)
+        {
+            ResultMessageDTO result = await _userDbService.LoginUserAsync(userToLoginDTO);
+
+            return StatusCode((int)result.HttpStatus, result.Message);
+
+        }
+
     }
 }

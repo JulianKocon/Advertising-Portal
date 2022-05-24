@@ -23,6 +23,36 @@ namespace AdvertisingPortal.Services.Implementations
             _context = context;
         }
 
+        public async Task<ResultMessageDTO> LoginUserAsync(UserToLoginDTO userToLoginDTO)
+        {
+            User user = await _context.Users.Where(x => x.Email.Equals(userToLoginDTO.Email)).SingleOrDefaultAsync();
+            if(user == null)
+            {
+                return new ResultMessageDTO
+                {
+                    HttpStatus = HttpStatusCode.BadRequest,
+                    Message = "Wrong email"
+                };
+            }
+
+            bool isPasswordValid = VerifyPasswordHash(userToLoginDTO.Password, user);
+
+            if (!isPasswordValid)
+            {
+                return new ResultMessageDTO
+                {
+                    HttpStatus = HttpStatusCode.BadRequest,
+                    Message = "Wrong password"
+                };
+            }
+
+            return new ResultMessageDTO
+            {
+                HttpStatus = HttpStatusCode.OK,
+                Message = "Logged in"
+            };
+        }
+
         public async Task<User> RegisterUserAsync(UserDTO userDTO)
         {
             User user = null;
@@ -53,6 +83,15 @@ namespace AdvertisingPortal.Services.Implementations
                 passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
 
+        }
+
+        private bool VerifyPasswordHash(string password, User user)
+        {
+            using (var hmac = new HMACSHA512(user.PasswordSalt))
+            {
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return computedHash.SequenceEqual(user.PasswordHash);
+            }
         }
     }
 }
