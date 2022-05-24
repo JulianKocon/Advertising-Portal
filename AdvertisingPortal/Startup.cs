@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 
 namespace AdvertisingPortal
 {
@@ -35,7 +36,10 @@ namespace AdvertisingPortal
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DbConnString"));
             });
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson( opt =>
+            {
+                opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AdvertisingPortal", Version = "v1" });

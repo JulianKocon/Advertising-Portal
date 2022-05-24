@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
+﻿using System.Net;
 using System.Threading.Tasks;
 using AdvertisingPortal.DTO;
-using AdvertisingPortal.Entities;
 using AdvertisingPortal.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdvertisingPortal.Controllers
@@ -35,7 +28,7 @@ namespace AdvertisingPortal.Controllers
             }
             else
             {
-                return StatusCode((int) HttpStatusCode.Created, result);
+                return StatusCode((int)HttpStatusCode.Created, result);
             }
 
         }
@@ -45,7 +38,14 @@ namespace AdvertisingPortal.Controllers
         {
             ResultMessageDTO result = await _userDbService.LoginUserAsync(userToLoginDTO);
 
-            return StatusCode((int)result.HttpStatus, result.Message);
+            if(result.Token == null)
+            {
+                return StatusCode((int)result.HttpStatus, result.Message);
+            }
+            else
+            {
+                return StatusCode((int)result.HttpStatus, result.Token);
+            }
 
         }
 

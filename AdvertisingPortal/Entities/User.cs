@@ -31,7 +31,7 @@ namespace AdvertisingPortal.Entities
 
         [ForeignKey("IdRegion")]
         public string Region { get; set; }
-        public virtual ICollection<Role> Roles { get; set; }
+        public string Role { get; set; }
         public virtual ICollection<Advertisement> Advertisements { get; set; }
         public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; }
     }
