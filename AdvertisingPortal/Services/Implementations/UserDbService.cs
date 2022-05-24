@@ -77,7 +77,7 @@ namespace AdvertisingPortal.Services.Implementations
                 Email = userDTO.Email,
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
-               Role = "User"
+                Role = "User"
             };
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -105,24 +105,24 @@ namespace AdvertisingPortal.Services.Implementations
 
         private string CreateToken(User user)
         {
-            List<Claim> claims = new List<Claim>
+            List<Claim> claims = new()
             {
                 new(ClaimTypes.Name, user.Username),
                 new(ClaimTypes.Role, user.Role)
             };
 
-            
-            
-               
-            
+
+
+
+
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
-                "http://localhost:5001",
-                "http://localhost:5001",
+                "http://localhost:14838",
+                "http://localhost:14838",
                 claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds
