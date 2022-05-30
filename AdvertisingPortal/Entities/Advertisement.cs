@@ -28,7 +28,7 @@ namespace AdvertisingPortal.Entities
         public int IdRegion { get; set; }
 
         [ForeignKey("IdRegion")]
-        public string Region { get; set; }
+        public Region Region { get; set; }
         public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; }
         public virtual ICollection<Category> Categories { get; set; }
 

@@ -9,7 +9,10 @@ namespace AdvertisingPortal.Services.Interfaces
 {
     public interface IAdvertisementDbService
     {
-        Task<Advertisement> GetAdvertisementAsync(int IdAdvertisement);
-        Task<AdvertisementDetailedDTO>GetDetailedAdvertisementAsync(int IdAdvertisement);
+        Task<Advertisement> GetAdvertisementAsync(int idAdvertisement);
+        Task<AdvertisementDetailedDTO>GetDetailedAdvertisementAsync(int idAdvertisement);
+        Task<Advertisement> AddAdvertisementAsync(string username, AdvertisementToAddDTO advertisement);
+        Task<ResultMessageDTO> ModifyAdvertisementAsync(string username, int idAdvertisement, AdvertisementToAddDTO advertisement);
+        Task<ResultMessageDTO> DeleteAdvertisementAsync(string username, int idAdvertisement);
     }
 }

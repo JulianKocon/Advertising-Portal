@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using AdvertisingPortal.DataAccess;
 using AdvertisingPortal.DTO;
@@ -18,14 +19,66 @@ namespace AdvertisingPortal.Services.Implementations
         {
             _context = context;
         }
-        public async Task<Advertisement> GetAdvertisementAsync(int IdAdvertisement)
+
+        public async Task<Advertisement> AddAdvertisementAsync(string username, AdvertisementToAddDTO advertisement)
         {
-            return await _context.Advertisements.Where(x => x.IdAdvertisement == IdAdvertisement).SingleOrDefaultAsync();
+
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Username.Equals(username));
+
+
+            if (await _context.Advertisements.AnyAsync(x => x.IdUser == user.IdUser && x.Name.Equals(advertisement.Name))){
+                return null;
+            }
+
+            Advertisement ad = new()
+            {
+                User = user,
+                Name = advertisement.Name,
+                Price = advertisement.Price,
+                Description = advertisement.Description,
+                Date = DateTime.UtcNow,
+                Region = await _context.Regions.SingleOrDefaultAsync(x => x.Name.Equals(advertisement.Region))
+            };
+              
+            await _context.Advertisements.AddAsync(ad);
+            await _context.SaveChangesAsync();
+
+            return ad;
         }
 
-        public async Task<AdvertisementDetailedDTO> GetDetailedAdvertisementAsync(int IdAdvertisement)
+        public async Task<ResultMessageDTO> DeleteAdvertisementAsync(string username, int idAdvertisement)
         {
-            Advertisement ad = await _context.Advertisements.SingleOrDefaultAsync(x => x.IdAdvertisement == IdAdvertisement);
+            Advertisement ad = await _context.Advertisements
+                                    .Where(x => x.User.Username.Equals(username))
+                                    .SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
+            if(ad == null)
+            {
+                return new ResultMessageDTO
+                {
+                    HttpStatus = HttpStatusCode.NotFound,
+                    Message = "You don't have an advertisement with given id"
+                };
+            }
+
+            _context.Advertisements.Remove(ad);
+            await _context.SaveChangesAsync();
+
+            return new ResultMessageDTO
+            {
+                HttpStatus = HttpStatusCode.OK,
+                Message = "Advertisement deleted"
+            };
+
+        }
+
+        public async Task<Advertisement> GetAdvertisementAsync(int idAdvertisement)
+        {
+            return await _context.Advertisements.Where(x => x.IdAdvertisement == idAdvertisement).SingleOrDefaultAsync();
+        }
+
+        public async Task<AdvertisementDetailedDTO> GetDetailedAdvertisementAsync(int idAdvertisement)
+        {
+            Advertisement ad = await _context.Advertisements.SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
 
             if(ad == null)
             {
@@ -33,11 +86,11 @@ namespace AdvertisingPortal.Services.Implementations
             }
 
             IQueryable<AdvertisementDetailedDTO> adDTO = _context.Advertisements
-                .Include(x => x.IdUser)
-                .Where(x => x.IdAdvertisement == IdAdvertisement)
+                .Include(x => x.User)
+                .Where(x => x.IdAdvertisement == idAdvertisement)
                 .Select(x => new AdvertisementDetailedDTO
                 {
-                    Owner = new UserDTO
+                    Owner = new UserToAdvertisementDetailedDTO
                     {
                         Username = x.User.Username,
                         Email = x.User.Email
@@ -55,6 +108,33 @@ namespace AdvertisingPortal.Services.Implementations
             AdvertisementDetailedDTO advertisementToReturn = adDTO.First();
 
             return advertisementToReturn;
+        }
+
+        public async Task<ResultMessageDTO> ModifyAdvertisementAsync(string username, int idAdvertisement, AdvertisementToAddDTO advertisementToAddDTO)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Username.Equals(username));
+
+            Advertisement ad = await _context.Advertisements.Where(x => x.IdAdvertisement == idAdvertisement).SingleOrDefaultAsync(x => x.IdUser == user.IdUser);
+
+            if(ad == null) {
+                return new ResultMessageDTO
+                {
+                    HttpStatus = HttpStatusCode.NotFound,
+                    Message = "Wrong advertisement id"
+                };
+            }
+
+            ad.Name = advertisementToAddDTO.Name;
+            ad.Price = advertisementToAddDTO.Price;
+            ad.Description = advertisementToAddDTO.Description;
+
+            await _context.SaveChangesAsync();
+
+            return new ResultMessageDTO
+            {
+                HttpStatus = HttpStatusCode.OK,
+                Message = "Advertisement modified"
+            };
         }
     }
 }
