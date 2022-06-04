@@ -10,6 +10,12 @@ namespace AdvertisingPortal.Entities
 {
     public class User
     {
+        public User()
+        {
+            Advertisements = new HashSet<Advertisement>();
+            PurchaseOrders = new HashSet<PurchaseOrder>();
+        }
+
         [Key]
         public int IdUser { get; set; }
         [Required]

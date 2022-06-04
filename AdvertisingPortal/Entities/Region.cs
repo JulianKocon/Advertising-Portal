@@ -6,6 +6,12 @@ namespace AdvertisingPortal.DataAccess
 {
     public class Region
     {
+        public Region()
+        {
+            Advertisements = new HashSet<Advertisement>();
+            Users = new HashSet<User>();
+        }
+
         [Key]
         public int IdRegion { get; set; }
         [Required]

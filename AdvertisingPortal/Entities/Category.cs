@@ -6,6 +6,11 @@ namespace AdvertisingPortal.Entities
 {
      public class Category
     {
+        public Category()
+        {
+            Advertisements = new HashSet<Advertisement>();
+        }
+
         [Key]
         public int IdCategory { get; set; }
         public string Name { get; set; }

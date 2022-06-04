@@ -8,8 +8,14 @@ namespace AdvertisingPortal.Entities
 {
     public class Advertisement
     {
+        public Advertisement()
+        {
+            PurchaseOrders = new HashSet<PurchaseOrder>();
+            Categories = new HashSet<Category>();
+        }
+
         [Key]
-        public int IdAdvertisement { get; set; } 
+        public int IdAdvertisement { get; set; }
         public int IdUser { get; set; }
 
         [ForeignKey("IdUser")]
