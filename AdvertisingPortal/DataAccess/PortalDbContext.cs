@@ -75,7 +75,8 @@ namespace AdvertisingPortal.DataAccess
                         Description = "Old but gold",
                         Date = DateTime.Parse("18/05/2022"),
                         IdRegion = 1,
-                        Price = 24000
+                        Price = 24000,
+                        IsAvailable = true
                     }
                     );
 
@@ -88,9 +89,11 @@ namespace AdvertisingPortal.DataAccess
                        Description = "White Maine Coon for sale",
                        Date = DateTime.Parse("18/05/2022"),
                        IdRegion = 1,
-                       Price = 1000
+                       Price = 1000,
+                       IsAvailable = true
                    }
                    );
+               
             });
 
         }

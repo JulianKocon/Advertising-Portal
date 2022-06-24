@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using AdvertisingPortal.DataAccess;
+﻿using AdvertisingPortal.DataAccess;
 using AdvertisingPortal.DTO;
 using AdvertisingPortal.Entities;
 using AdvertisingPortal.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace AdvertisingPortal.Services.Implementations
 {
@@ -26,7 +25,8 @@ namespace AdvertisingPortal.Services.Implementations
             var user = await _context.Users.SingleOrDefaultAsync(x => x.Username.Equals(username));
 
 
-            if (await _context.Advertisements.AnyAsync(x => x.IdUser == user.IdUser && x.Name.Equals(advertisement.Name))){
+            if (await _context.Advertisements.AnyAsync(x => x.IdUser == user.IdUser && x.Name.Equals(advertisement.Name)))
+            {
                 return null;
             }
 
@@ -37,9 +37,10 @@ namespace AdvertisingPortal.Services.Implementations
                 Price = advertisement.Price,
                 Description = advertisement.Description,
                 Date = DateTime.UtcNow,
-                Region = await _context.Regions.SingleOrDefaultAsync(x => x.Name.Equals(advertisement.Region))
+                Region = await _context.Regions.SingleOrDefaultAsync(x => x.Name.Equals(advertisement.Region)),
+                IsAvailable = true
             };
-              
+
             await _context.Advertisements.AddAsync(ad);
             await _context.SaveChangesAsync();
 
@@ -51,12 +52,20 @@ namespace AdvertisingPortal.Services.Implementations
             Advertisement ad = await _context.Advertisements
                                     .Where(x => x.User.Username.Equals(username))
                                     .SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
-            if(ad == null)
+            if (ad == null)
             {
                 return new ResultMessageDTO
                 {
                     HttpStatus = HttpStatusCode.NotFound,
                     Message = "You don't have an advertisement with given id"
+                };
+            }
+            else if (ad.IsAvailable == false)
+            {
+                return new ResultMessageDTO
+                {
+                    HttpStatus = HttpStatusCode.Unauthorized,
+                    Message = "You can't delete archived advertisement"
                 };
             }
 
@@ -80,7 +89,7 @@ namespace AdvertisingPortal.Services.Implementations
         {
             Advertisement ad = await _context.Advertisements.SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
 
-            if(ad == null)
+            if (ad == null)
             {
                 return null;
             }
@@ -116,11 +125,20 @@ namespace AdvertisingPortal.Services.Implementations
 
             Advertisement ad = await _context.Advertisements.Where(x => x.IdAdvertisement == idAdvertisement).SingleOrDefaultAsync(x => x.IdUser == user.IdUser);
 
-            if(ad == null) {
+            if (ad == null)
+            {
                 return new ResultMessageDTO
                 {
                     HttpStatus = HttpStatusCode.NotFound,
                     Message = "Wrong advertisement id"
+                };
+            }
+            else if (ad.IsAvailable == false)
+            {
+                return new ResultMessageDTO
+                {
+                    HttpStatus = HttpStatusCode.Unauthorized,
+                    Message = "You can't modify archived advertisement"
                 };
             }
 

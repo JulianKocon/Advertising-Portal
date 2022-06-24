@@ -4,6 +4,7 @@ using AdvertisingPortal.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdvertisingPortal.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220624202003_AddedIsAvailableToAdvertisementTable")]
+    partial class AddedIsAvailableToAdvertisementTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,7 +146,7 @@ namespace AdvertisingPortal.Migrations
                             Description = "Old but gold",
                             IdRegion = 1,
                             IdUser = 1,
-                            IsAvailable = true,
+                            IsAvailable = false,
                             Name = "Toyota mr2",
                             Price = 24000m
                         },
@@ -155,7 +157,7 @@ namespace AdvertisingPortal.Migrations
                             Description = "White Maine Coon for sale",
                             IdRegion = 1,
                             IdUser = 1,
-                            IsAvailable = true,
+                            IsAvailable = false,
                             Name = "Pets",
                             Price = 1000m
                         });

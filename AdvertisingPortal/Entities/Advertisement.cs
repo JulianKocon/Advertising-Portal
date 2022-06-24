@@ -27,6 +27,7 @@ namespace AdvertisingPortal.Entities
         [MaxLength(100)]
         [Column(TypeName = "money")]
         public decimal Price { get; set; }
+        public bool IsAvailable { get; set; }
         [Required]
         public string Description { get; set; }
         [Required]
