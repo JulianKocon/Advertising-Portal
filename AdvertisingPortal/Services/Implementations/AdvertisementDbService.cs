@@ -5,7 +5,6 @@ using AdvertisingPortal.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace AdvertisingPortal.Services.Implementations
@@ -47,37 +46,18 @@ namespace AdvertisingPortal.Services.Implementations
             return ad;
         }
 
-        public async Task<ResultMessageDTO> DeleteAdvertisementAsync(string username, int idAdvertisement)
+        public async Task DeleteAdvertisementAsync(Advertisement ad)
         {
-            Advertisement ad = await _context.Advertisements
-                                    .Where(x => x.User.Username.Equals(username))
-                                    .SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
-            if (ad == null)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.NotFound,
-                    Message = "You don't have an advertisement with given id"
-                };
-            }
-            else if (ad.IsAvailable == false)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.Unauthorized,
-                    Message = "You can't delete archived advertisement"
-                };
-            }
-
             _context.Advertisements.Remove(ad);
             await _context.SaveChangesAsync();
 
-            return new ResultMessageDTO
-            {
-                HttpStatus = HttpStatusCode.OK,
-                Message = "Advertisement deleted"
-            };
+        }
 
+        public async Task<Advertisement> GetUserAdvertisement(string username, int idAdvertisement)
+        {
+            return await _context.Advertisements
+                                                .Where(x => x.User.Username.Equals(username))
+                                                .SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
         }
 
         public async Task<Advertisement> GetAdvertisementAsync(int idAdvertisement)
@@ -119,40 +99,13 @@ namespace AdvertisingPortal.Services.Implementations
             return advertisementToReturn;
         }
 
-        public async Task<ResultMessageDTO> ModifyAdvertisementAsync(string username, int idAdvertisement, AdvertisementToAddDTO advertisementToAddDTO)
+        public async Task ModifyAdvertisementAsync(Advertisement ad, AdvertisementToAddDTO advertisementToAddDTO)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.Username.Equals(username));
-
-            Advertisement ad = await _context.Advertisements.Where(x => x.IdAdvertisement == idAdvertisement).SingleOrDefaultAsync(x => x.IdUser == user.IdUser);
-
-            if (ad == null)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.NotFound,
-                    Message = "Wrong advertisement id"
-                };
-            }
-            else if (ad.IsAvailable == false)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.Unauthorized,
-                    Message = "You can't modify archived advertisement"
-                };
-            }
-
             ad.Name = advertisementToAddDTO.Name;
             ad.Price = advertisementToAddDTO.Price;
             ad.Description = advertisementToAddDTO.Description;
 
             await _context.SaveChangesAsync();
-
-            return new ResultMessageDTO
-            {
-                HttpStatus = HttpStatusCode.OK,
-                Message = "Advertisement modified"
-            };
         }
     }
 }

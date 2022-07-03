@@ -7,6 +7,8 @@ namespace AdvertisingPortal.Services.Interfaces
     public interface IUserDbService
     {
         Task<User> RegisterUserAsync(UserDTO userDTO);
-        Task<ResultMessageDTO> LoginUserAsync(UserToLoginDTO userToLoginDTO);
+        string CreateToken(User user);
+        User CheckIfEmailIsOccupied(string email);
+        bool VerifyPasswordHash(string password, User user);
     }
 }

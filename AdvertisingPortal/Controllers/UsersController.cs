@@ -1,8 +1,9 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-using AdvertisingPortal.DTO;
+﻿using AdvertisingPortal.DTO;
+using AdvertisingPortal.Entities;
 using AdvertisingPortal.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace AdvertisingPortal.Controllers
 {
@@ -20,34 +21,40 @@ namespace AdvertisingPortal.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(UserDTO userDTO)
         {
-            var result = await _userDbService.RegisterUserAsync(userDTO);
-
-            if (result == null)
+            if (_userDbService.CheckIfEmailIsOccupied(userDTO.Email) != null)
             {
                 return BadRequest("This email is occupied");
             }
             else
             {
+                var result = await _userDbService.RegisterUserAsync(userDTO);
                 return StatusCode((int)HttpStatusCode.Created, result);
             }
 
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> LoginUser(UserToLoginDTO userToLoginDTO)
+        public IActionResult LoginUser(UserToLoginDTO userToLoginDTO)
         {
-            ResultMessageDTO result = await _userDbService.LoginUserAsync(userToLoginDTO);
+            User user = _userDbService.CheckIfEmailIsOccupied(userToLoginDTO.Email);
 
-            if(result.Token == null)
+            if (user == null)
             {
-                return StatusCode((int)result.HttpStatus, result.Message);
+                return BadRequest("This email is occupied");
+            }
+            else if (!_userDbService.VerifyPasswordHash(userToLoginDTO.Password, user))
+            {
+                return BadRequest("Wrong password");
             }
             else
             {
-                return StatusCode((int)result.HttpStatus, result.Token);
+                var result = _userDbService.CreateToken(user);
+
+                return Ok(result);
             }
 
-        }
 
+        }
     }
+
 }

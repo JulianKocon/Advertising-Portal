@@ -28,9 +28,28 @@ namespace AdvertisingPortal.Controllers
         public async Task<IActionResult> BuyProduct(int idAdvertisement)
         {
             string username = User.Identity.Name;
-            ResultMessageDTO result = await _purchaseOrderDbService.Purchase(idAdvertisement, username);
 
-            return StatusCode((int)result.HttpStatus, result.Message);
+            Advertisement ad = _purchaseOrderDbService.GetAdvertisement(idAdvertisement);
+            if (ad == null)
+            {
+                return BadRequest("No advertisement available with given id.");
+            }
+            else if(ad.IsAvailable){
+                return BadRequest("This advetisement is archived.");
+            }
+
+            User buyer = _purchaseOrderDbService.GetUser(username);
+
+            if (buyer.Money < ad.Price)
+            {
+                return BadRequest("You don't have enough money.");
+            }
+            else
+            {
+                var result = await _purchaseOrderDbService.Purchase(buyer, ad);
+                return Ok(result);
+            }
+
         }
     }
 }

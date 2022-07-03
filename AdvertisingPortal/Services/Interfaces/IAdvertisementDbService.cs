@@ -12,7 +12,8 @@ namespace AdvertisingPortal.Services.Interfaces
         Task<Advertisement> GetAdvertisementAsync(int idAdvertisement);
         Task<AdvertisementDetailedDTO>GetDetailedAdvertisementAsync(int idAdvertisement);
         Task<Advertisement> AddAdvertisementAsync(string username, AdvertisementToAddDTO advertisement);
-        Task<ResultMessageDTO> ModifyAdvertisementAsync(string username, int idAdvertisement, AdvertisementToAddDTO advertisement);
-        Task<ResultMessageDTO> DeleteAdvertisementAsync(string username, int idAdvertisement);
+        Task ModifyAdvertisementAsync(Advertisement ad, AdvertisementToAddDTO advertisementToAddDTO);
+        Task DeleteAdvertisementAsync(Advertisement ad);
+        Task<Advertisement> GetUserAdvertisement(string username, int idAdvertisement);
     }
 }

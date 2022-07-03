@@ -1,10 +1,10 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-using AdvertisingPortal.DTO;
+﻿using AdvertisingPortal.DTO;
 using AdvertisingPortal.Entities;
 using AdvertisingPortal.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace AdvertisingPortal.Controllers
 {
@@ -27,7 +27,7 @@ namespace AdvertisingPortal.Controllers
             Advertisement ad = await _advertisementDbService.GetAdvertisementAsync(idAdvertisement);
             if (ad == null)
             {
-                return StatusCode((int)HttpStatusCode.BadRequest, "No advertisement with given Id");
+                return BadRequest("No advertisement with given Id");
             }
             else
             {
@@ -44,7 +44,7 @@ namespace AdvertisingPortal.Controllers
 
             if (ad == null)
             {
-                return StatusCode((int)HttpStatusCode.BadRequest, "No advertisement with given Id");
+                return BadRequest("No advertisement with given Id");
             }
             return Ok(ad);
         }
@@ -58,7 +58,7 @@ namespace AdvertisingPortal.Controllers
 
             if (result == null)
             {
-                return StatusCode((int)HttpStatusCode.BadRequest, "You already have adverisement with this name");
+                return BadRequest("You already have adverisement with this name");
             }
 
             return StatusCode((int)HttpStatusCode.Created, advertisement);
@@ -69,9 +69,22 @@ namespace AdvertisingPortal.Controllers
         public async Task<IActionResult> ModifyAdvertisement(int idAdvertisement, AdvertisementToAddDTO advertisement)
         {
             var username = User.Identity.Name;
-            ResultMessageDTO result = await _advertisementDbService.ModifyAdvertisementAsync(username, idAdvertisement, advertisement);
 
-            return StatusCode((int)result.HttpStatus, result.Message);
+            Advertisement ad = await _advertisementDbService.GetUserAdvertisement(username, idAdvertisement);
+
+            if (ad == null)
+            {
+                return NotFound("Wrong advertisement id");
+
+            }
+            else if (ad.IsAvailable == false)
+            {
+                return Unauthorized("You can't modify archived advertisement");
+
+            }
+            await _advertisementDbService.ModifyAdvertisementAsync(ad, advertisement);
+
+            return Ok("Advertisement modified");
         }
 
         [Authorize]
@@ -79,9 +92,23 @@ namespace AdvertisingPortal.Controllers
         public async Task<IActionResult> DeleteAdvertisement(int idAdvertisement)
         {
             var username = User.Identity.Name;
-            ResultMessageDTO result = await _advertisementDbService.DeleteAdvertisementAsync(username, idAdvertisement);
 
-            return StatusCode((int)result.HttpStatus, result.Message);
+            Advertisement ad = await _advertisementDbService.GetUserAdvertisement(username, idAdvertisement);
+
+            if (ad == null)
+            {
+                return NotFound("You don't have an advertisement with given id");
+
+            }
+            else if (ad.IsAvailable == false)
+            {
+                return Unauthorized("You can't delete archived advertisement");
+
+            }
+
+            await _advertisementDbService.DeleteAdvertisementAsync(ad);
+
+            return Ok("Advertisement deleted");
         }
     }
 }

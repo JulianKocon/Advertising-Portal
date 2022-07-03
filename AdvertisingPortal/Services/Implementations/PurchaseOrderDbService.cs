@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using AdvertisingPortal.DataAccess;
-using AdvertisingPortal.DTO;
+﻿using AdvertisingPortal.DataAccess;
 using AdvertisingPortal.Entities;
 using AdvertisingPortal.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvertisingPortal.Services.Implementations
 {
@@ -20,34 +16,8 @@ namespace AdvertisingPortal.Services.Implementations
             _context = context;
         }
 
-        public async Task<ResultMessageDTO> Purchase(int idAdvertisement, string username)
+        public async Task<PurchaseOrder> Purchase(User buyer, Advertisement ad)
         {
-            User buyer = await _context.Users.SingleOrDefaultAsync(x => x.Username.Equals(username));
-
-            Advertisement ad = await _context.Advertisements.SingleOrDefaultAsync(x => x.IdAdvertisement == idAdvertisement);
-
-            if(ad == null)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.BadRequest,
-                    Message = "No advertisement available with given id."
-                };
-            }else if(ad.IsAvailable == false)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.BadRequest,
-                    Message = "You can't buy archived advertisement."
-                };
-            }if(buyer.Money < ad.Price)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.BadRequest,
-                    Message = "You don't have enough money."
-                };
-            }
 
             buyer.Money -= ad.Price;
 
@@ -61,13 +31,19 @@ namespace AdvertisingPortal.Services.Implementations
             ad.IsAvailable = false;
             await _context.PurchaseOrders.AddAsync(purchaseOrder);
             await _context.SaveChangesAsync();
-            
-            return new ResultMessageDTO
-            {
-                HttpStatus = HttpStatusCode.OK,
-                Message = "Order completed"
-            };
-           
+
+            return purchaseOrder;
+
+        }
+
+        public Advertisement GetAdvertisement(int idAdvertisement)
+        {
+            return _context.Advertisements.SingleOrDefault(x => x.IdAdvertisement == idAdvertisement);
+        }
+
+        public User GetUser(string username)
+        {
+            return _context.Users.SingleOrDefault(x => x.Username.Equals(username));
         }
     }
 }

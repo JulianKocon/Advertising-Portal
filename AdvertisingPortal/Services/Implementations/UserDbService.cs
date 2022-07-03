@@ -28,50 +28,11 @@ namespace AdvertisingPortal.Services.Implementations
             _configuration = configuration;
         }
 
-        public async Task<ResultMessageDTO> LoginUserAsync(UserToLoginDTO userToLoginDTO)
-        {
-            User user = await _context.Users.Where(x => x.Email.Equals(userToLoginDTO.Email)).SingleOrDefaultAsync();
-            if (user == null)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.BadRequest,
-                    Message = "Wrong email"
-                };
-            }
-
-            bool isPasswordValid = VerifyPasswordHash(userToLoginDTO.Password, user);
-
-            if (!isPasswordValid)
-            {
-                return new ResultMessageDTO
-                {
-                    HttpStatus = HttpStatusCode.BadRequest,
-                    Message = "Wrong password"
-                };
-            }
-            string token = CreateToken(user);
-
-            return new ResultMessageDTO
-            {
-                HttpStatus = HttpStatusCode.OK,
-                Message = "Logged in",
-                Token = token
-            };
-        }
 
         public async Task<User> RegisterUserAsync(UserDTO userDTO)
         {
-            User user = null;
-            bool emailOccupied = _context.Users.AnyAsync(x => x.Email.Equals(userDTO.Email)).Result;
-
-            if (emailOccupied)
-            {
-                return user;
-            }
-
             CreatePasswordHash(userDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            user = new User()
+            User user = new User()
             {
                 Username = userDTO.Username,
                 Email = userDTO.Email,
@@ -94,7 +55,7 @@ namespace AdvertisingPortal.Services.Implementations
 
         }
 
-        private bool VerifyPasswordHash(string password, User user)
+        public bool VerifyPasswordHash(string password, User user)
         {
             using (var hmac = new HMACSHA512(user.PasswordSalt))
             {
@@ -103,18 +64,13 @@ namespace AdvertisingPortal.Services.Implementations
             }
         }
 
-        private string CreateToken(User user)
+        public string CreateToken(User user)
         {
             List<Claim> claims = new()
             {
                 new(ClaimTypes.Name, user.Username),
                 new(ClaimTypes.Role, user.Role)
             };
-
-
-
-
-
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
 
@@ -131,6 +87,19 @@ namespace AdvertisingPortal.Services.Implementations
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
         }
+
+        public User CheckIfEmailIsOccupied(string email)
+        {
+            User user = _context.Users.Where(x => x.Email.Equals(email)).SingleOrDefault();
+
+            if (user != null)
+            {
+                return user;
+            }
+
+            return null;
+        }
+
     }
 }
 
